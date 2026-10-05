@@ -20,13 +20,16 @@
   --color-accent-100: #fff1d6;
   --color-accent-400: #ffb938;
   --color-accent-600: #d98a00;
+  --color-accent-800: #7a4700;
 
   --color-success-100: #dcf6e8;
-  --color-success-600: #178a55;
+  --color-success-600: #075c35;
+  --color-success-800: #075c35;
   --color-warning-100: #fdf0d0;
-  --color-warning-600: #b97a00;
+  --color-warning-600: #714900;
+  --color-warning-800: #714900;
   --color-danger-100: #fde3e4;
-  --color-danger-600: #d6333a;
+  --color-danger-600: #a61b22;
 
   --color-ink: #1c1633;
   --color-muted: #6a6585;

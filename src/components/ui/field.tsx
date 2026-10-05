@@ -23,7 +23,7 @@ export function Field({ label, hint, error, icon, id, className, ...rest }: Prop
           aria-invalid={!!error}
           aria-describedby={error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined}
           className={cn(
-            "min-h-11 w-full rounded-xl border bg-surface px-4 text-sm text-ink placeholder:text-muted/70",
+            "min-h-11 w-full rounded-xl border bg-surface px-4 text-sm text-ink placeholder:text-muted",
             "transition-colors focus:border-primary-500",
             icon ? "pl-11" : false,
             error ? "border-danger-600" : "border-line",

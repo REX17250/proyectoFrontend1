@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Ban, Lock, Play, Search, Send, type LucideIcon } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { date, DAY_SHORT, STATUS_LABEL, STATUS_TONE } from "@/lib/format";
+import { grade } from "@/lib/format";
 import type { Paginated } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -127,7 +128,7 @@ function ClosePeriod({ period, onDone }: { period: any; onDone: () => void }) {
           {check && pending > 0 && (
             <>
               <p className="text-sm">
-                Hay <strong>{pending}</strong> matrículas activas sin nota final en {check.groups.length} grupos. Finalízalas desde la planilla de cada grupo, o cancélalas al cerrar.
+                 Hay <strong>{pending}</strong> {pending === 1 ? "matrícula activa" : "matrículas activas"} sin nota final en {check.groups.length} {check.groups.length === 1 ? "grupo" : "grupos"}. Finalízalas desde la planilla de cada grupo, o cancélalas al cerrar.
               </p>
               <ul className="max-h-40 divide-y divide-line overflow-y-auto rounded-xl border border-line text-sm">
                 {check.groups.map((g) => (
@@ -325,7 +326,7 @@ const enrollments: ResourceConfig = {
       ),
     },
     { header: "Periodo", cell: (r) => r.period?.code },
-    { header: "Nota final", align: "right", cell: (r) => (r.finalGrade !== undefined ? r.finalGrade.toFixed(1) : "—") },
+    { header: "Nota final", align: "right", cell: (r) => grade(r.finalGrade) },
     { header: "Estado", cell: (r) => <Badge tone={STATUS_TONE[r.status as keyof typeof STATUS_TONE]}>{STATUS_LABEL[r.status as keyof typeof STATUS_LABEL]}</Badge> },
   ],
   fields: [
@@ -454,7 +455,7 @@ export function SendNotice() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Tu clase del lunes pasa al salón B-204."
-            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder:text-muted/70 focus:border-primary-500"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder:text-muted focus:border-primary-500"
           />
           <p className="text-right text-xs text-muted">{body.length} / 500</p>
         </div>

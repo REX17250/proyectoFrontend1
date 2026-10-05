@@ -17,7 +17,7 @@ export default async function TeacherHome() {
 
   return (
     <>
-      <PageHeader title={`Hola, ${me.name.split(" ")[0]}`} subtitle="Resumen de tus grupos en el periodo abierto." />
+      <PageHeader title={`Hola, ${me.name.split(" ")[0]}`} subtitle={period ? "Resumen de tus grupos en el periodo abierto." : "No hay un periodo abierto actualmente."} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={CalendarDays} label="Periodo actual" value={period ? period.code : "—"} hint={period ? undefined : "No hay un periodo abierto"} />
         <StatCard icon={Users} label="Grupos a mi cargo" value={groups?.meta.total ?? 0} />

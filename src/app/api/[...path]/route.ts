@@ -30,7 +30,13 @@ async function forward(request: NextRequest, ctx: { params: Promise<{ path: stri
 
   // Al cambiar la contrasena el backend entrega un token nuevo (el anterior queda invalido): se reemplaza la cookie
   if (path.join("/") === "auth/change-password" && res.ok) {
-    const fresh = JSON.parse(text)?.accessToken as string | undefined;
+    const fresh = (() => {
+      try {
+        return JSON.parse(text)?.accessToken as string | undefined;
+      } catch {
+        return undefined;
+      }
+    })();
     const session = decodeToken(fresh);
     const response = NextResponse.json({ ok: true });
     if (fresh && session) {
@@ -45,7 +51,7 @@ async function forward(request: NextRequest, ctx: { params: Promise<{ path: stri
     return response;
   }
 
-  return new NextResponse(text, { status: res.status, headers: { "Content-Type": type } });
+  return new NextResponse([204, 205, 304].includes(res.status) ? null : text, { status: res.status, headers: { "Content-Type": type } });
 }
 
 export const GET = forward;

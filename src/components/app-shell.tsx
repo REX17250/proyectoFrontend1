@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BarChart3, Bell, BookOpen, Building2, DoorOpen, GraduationCap, Layers, Presentation, ShieldCheck, CalendarDays, ClipboardList, History, Home, LogOut, Map, Megaphone, Menu, PlusCircle, User, Users, X, type LucideIcon } from "lucide-react";
@@ -45,6 +45,26 @@ export function AppShell({ name, role, items, common, children }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Tab") return;
+      const nodes = drawerRef.current?.querySelectorAll<HTMLElement>('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!nodes?.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.querySelector<HTMLElement>("button, a")?.focus();
+    document.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
+  }, [open]);
 
   // Contador de notificaciones sin leer (se refresca cada minuto)
   useEffect(() => {
@@ -80,7 +100,7 @@ export function AppShell({ name, role, items, common, children }: Props) {
         aria-current={active ? "page" : undefined}
         className={cn(
           "flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold transition-colors",
-          active ? "bg-primary-600 text-white shadow-sm" : "text-white hover:bg-primary-50 hover:text-ink",
+          active ? "bg-primary-600 text-white shadow-sm" : "text-ink hover:bg-primary-50",
         )}
       >
         <Icon className="size-[18px]" aria-hidden />
@@ -103,13 +123,13 @@ export function AppShell({ name, role, items, common, children }: Props) {
         {items.map((item, i) => (
           <div key={item.href}>
             {item.section && item.section !== items[i - 1]?.section && (
-              <p className="mt-5 mb-1.5 px-3.5 text-xs font-bold tracking-wider text-white uppercase">{item.section}</p>
+              <p className="mt-5 mb-1.5 px-3.5 text-xs font-bold tracking-wider text-muted uppercase">{item.section}</p>
             )}
             {renderLink(item)}
           </div>
         ))}
       </div>
-      <p className="mt-6 mb-2 px-3.5 text-xs font-bold tracking-wider text-white uppercase">Cuenta</p>
+      <p className="mt-6 mb-2 px-3.5 text-xs font-bold tracking-wider text-muted uppercase">Cuenta</p>
       <div className="space-y-1">{common.map(renderLink)}</div>
 
       <div className="mt-auto flex items-center gap-3 rounded-xl border border-line bg-canvas p-3">
@@ -141,7 +161,7 @@ export function AppShell({ name, role, items, common, children }: Props) {
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú">
           <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-surface shadow-xl">
+          <div ref={drawerRef} className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-surface shadow-xl">
             <button onClick={() => setOpen(false)} aria-label="Cerrar menú" className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-xl hover:bg-primary-50">
               <X className="size-5" aria-hidden />
             </button>

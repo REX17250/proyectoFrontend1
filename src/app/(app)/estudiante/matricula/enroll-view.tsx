@@ -12,9 +12,6 @@ import { Card } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Alert, EmptyState } from "@/components/ui/feedback";
 
-// Limite de creditos por periodo (regla del backend)
-const MAX_CREDITS = 20;
-
 export function EnrollView() {
   const [all, setAll] = useState(false);
   const [query, setQuery] = useState("");
@@ -71,8 +68,6 @@ export function EnrollView() {
   }
   if (!data) return <p className="text-sm text-muted">Cargando grupos…</p>;
 
-  const pct = Math.min((credits / MAX_CREDITS) * 100, 100);
-
   return (
     <>
       <Card className="mb-6 flex flex-wrap items-center gap-x-10 gap-y-4 p-5">
@@ -82,11 +77,9 @@ export function EnrollView() {
         </div>
         <div className="min-w-56 flex-1">
           <p className="text-sm text-muted">
-            Créditos matriculados: <strong className="text-ink">{credits}</strong> de {MAX_CREDITS}
+            Créditos matriculados: <strong className="text-ink">{credits}</strong>
           </p>
-          <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-primary-100" role="progressbar" aria-valuenow={credits} aria-valuemin={0} aria-valuemax={MAX_CREDITS} aria-label="Créditos matriculados">
-            <div className={cn("h-full rounded-full", credits >= MAX_CREDITS ? "bg-accent-400" : "bg-primary-600")} style={{ width: `${pct}%` }} />
-          </div>
+          <p className="mt-2 text-xs text-muted">El límite aplicable se valida al matricular.</p>
         </div>
       </Card>
 

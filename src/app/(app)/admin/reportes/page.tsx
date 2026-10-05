@@ -80,7 +80,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <section className="mb-8">
+    <section className="mb-8 min-w-0">
       <h2 className="text-lg font-bold">{title}</h2>
       {hint && <p className="mb-3 text-sm text-muted">{hint}</p>}
       <div className={hint ? "" : "mt-3"}>{children}</div>
@@ -96,7 +96,7 @@ async function Occupancy({ period }: { period: string }) {
   const maxEnrollments = Math.max(...byProgram.rows.map((r) => r.enrollments), 1);
 
   return (
-    <div className="grid gap-8 xl:grid-cols-2">
+    <div className="grid min-w-0 gap-8 xl:grid-cols-2">
       <Section title="Grupos más llenos" hint="Los 15 grupos con mayor ocupación de cupos.">
         {groups.rows.length === 0 ? (
           <EmptyState title="No hay grupos en este periodo" />

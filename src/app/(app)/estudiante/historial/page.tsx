@@ -46,7 +46,7 @@ export default async function HistoryPage() {
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-bold">Periodo {p.period.code}</h2>
-                  <Badge tone={p.period.status === "abierto" ? "success" : "neutral"}>{p.period.status === "abierto" ? "Abierto" : "Cerrado"}</Badge>
+                  <Badge tone={p.period.status === "abierto" ? "success" : p.period.status === "planificado" ? "warning" : "neutral"}>{p.period.status === "abierto" ? "Abierto" : p.period.status === "planificado" ? "Planificado" : "Cerrado"}</Badge>
                 </div>
                 <p className="text-sm text-muted">
                   {p.credits} créditos · Promedio <strong className="text-ink">{grade(p.gpa)}</strong>

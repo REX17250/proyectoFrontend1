@@ -4,10 +4,10 @@ import { cn } from "@/lib/cn";
 // Si algun dia hay un servicio de imagenes (S3), solo se cambia este componente.
 const COLORS = [
   "bg-primary-100 text-primary-800",
-  "bg-accent-100 text-accent-600",
-  "bg-success-100 text-success-600",
+  "bg-accent-100 text-accent-800",
+  "bg-success-100 text-success-800",
   "bg-danger-100 text-danger-600",
-  "bg-warning-100 text-warning-600",
+  "bg-warning-100 text-warning-800",
 ];
 
 export function initials(name: string): string {

@@ -40,6 +40,7 @@ export interface FilterDef {
   options?: Opt[];
   lookup?: string;
   text?: boolean; // campo de texto en vez de lista
+  type?: "text" | "number";
 }
 
 export interface ResourceConfig {
@@ -61,6 +62,7 @@ export interface ResourceConfig {
 }
 
 const PAGE_SIZE = 15;
+let latestListRequest = 0;
 const message = (e: unknown, fallback: string) => (e instanceof ApiError ? e.message : fallback);
 
 export const ACTIVE_OPTIONS: Opt[] = [
@@ -112,9 +114,12 @@ export function ResourceManager({ config }: { config: ResourceConfig }) {
   const load = useCallback(async () => {
     const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
     if (config.search && query) params.set(config.search.param, query);
-    if (page === 1) Object.entries(filters).forEach(([k, v]) => v && params.set(k, v));
+    Object.entries(filters).forEach(([k, v]) => v && params.set(k, v));
+    const id = ++latestListRequest;
     try {
-      setData(await api<Paginated<any>>(`${config.endpoint}?${params}`));
+      const response = await api<Paginated<any>>(`${config.endpoint}?${params}`);
+      if (id !== latestListRequest) return;
+      setData(response);
       setError(null);
     } catch (e) {
       setError(message(e, "No se pudo cargar la lista"));
@@ -143,6 +148,7 @@ export function ResourceManager({ config }: { config: ResourceConfig }) {
               <Field
                 label={f.label}
                 name={`f-${f.param}`}
+                type={f.type ?? "text"}
                 value={filters[f.param] ?? ""}
                 onChange={(e) => {
                   setFilters((s) => ({ ...s, [f.param]: e.target.value }));
@@ -166,7 +172,7 @@ export function ResourceManager({ config }: { config: ResourceConfig }) {
             </div>
           ),
         )}
-        <Button className="ml-auto" onClick={() => setForm({ mode: "create", row: null })}>
+        <Button className="ml-auto" onClick={() => { setNotice(null); dirty.current = false; setForm({ mode: "create", row: null }); }}>
           <Plus className="size-4" aria-hidden /> {config.newLabel}
         </Button>
       </div>
@@ -184,7 +190,7 @@ export function ResourceManager({ config }: { config: ResourceConfig }) {
           <EmptyState title={config.empty} text="Prueba cambiando los filtros o crea un registro nuevo." />
         ) : (
           <Card className="overflow-hidden p-0">
-            <div>
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[40rem] text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-muted">
@@ -294,7 +300,7 @@ function RecordForm({
 
   // Avisa al contenedor si el formulario tiene cambios respecto al registro original
   useEffect(() => {
-    onDirty(JSON.stringify(values) !== JSON.stringify(row ?? config.initial(null)));
+    onDirty(JSON.stringify(values) !== JSON.stringify(config.initial(row)));
   }, [values, row, config, onDirty]);
   const [dynamic, setDynamic] = useState<Record<string, Opt[]>>({});
   const [error, setError] = useState<string | null>(null);
@@ -334,6 +340,23 @@ function RecordForm({
     event.preventDefault();
     setSaving(true);
     setError(null);
+    if (values.startDate && values.endDate && String(values.endDate) <= String(values.startDate)) {
+      setError("La fecha de fin debe ser posterior a la fecha de inicio.");
+      setSaving(false);
+      return;
+    }
+    for (const field of fields) {
+      const value = String(values[field.name] ?? "");
+      if (field.type === "email" && value && !/^\S+@\S+\.\S+$/.test(value)) {
+        setError("Ingresa un correo electrónico válido."); setSaving(false); return;
+      }
+      if (field.type === "password" && value && (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value))) {
+        setError("La contraseña debe tener al menos 8 caracteres, letras y números."); setSaving(false); return;
+      }
+      if (field.type === "number" && value && (Number.isNaN(Number(value)) || (field.min !== undefined && Number(value) < field.min) || (field.max !== undefined && Number(value) > field.max))) {
+        setError(`${field.label} no está dentro del rango permitido.`); setSaving(false); return;
+      }
+    }
     try {
       const body = config.toBody(values, mode);
       if (mode === "create") await api(config.endpoint, { method: "POST", body });
@@ -346,7 +369,7 @@ function RecordForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4" noValidate>
+    <form onSubmit={submit} className="space-y-4">
       {error && <Alert>{error}</Alert>}
       {fields.map((f) => {
         const id = `f-${f.name}`;
@@ -403,6 +426,7 @@ function RecordForm({
             type={f.type}
             min={f.min}
             max={f.max}
+            minLength={f.type === "password" ? 8 : undefined}
             placeholder={f.placeholder}
             autoComplete={f.type === "password" ? "new-password" : "off"}
             value={String(value ?? "")}
@@ -445,10 +469,10 @@ function ScheduleEditor({ label, hint, slots, classrooms, onChange }: { label: s
       {hint && <p className="text-xs text-muted">{hint}</p>}
       {slots.map((s, i) => (
         <div key={i} className="grid grid-cols-2 items-end gap-2 rounded-xl border border-line p-3 sm:grid-cols-[1fr_6.5rem_6.5rem_1fr_auto]">
-          <Select label="Día" options={DAY_OPTIONS} value={s.day} onChange={(e) => update(i, { day: e.target.value })} />
-          <Field label="Inicio" type="time" value={s.startTime} onChange={(e) => update(i, { startTime: e.target.value })} />
-          <Field label="Fin" type="time" value={s.endTime} onChange={(e) => update(i, { endTime: e.target.value })} />
-          <Select label="Salón" placeholder="Salón" options={classrooms} value={s.classroom} onChange={(e) => update(i, { classroom: e.target.value })} />
+          <Select id={`schedule-${i}-day`} name={`schedule-${i}-day`} label="Día" options={DAY_OPTIONS} value={s.day} onChange={(e) => update(i, { day: e.target.value })} />
+          <Field id={`schedule-${i}-start`} name={`schedule-${i}-start`} label="Inicio" type="time" value={s.startTime} onChange={(e) => update(i, { startTime: e.target.value })} />
+          <Field id={`schedule-${i}-end`} name={`schedule-${i}-end`} label="Fin" type="time" value={s.endTime} onChange={(e) => update(i, { endTime: e.target.value })} />
+          <Select id={`schedule-${i}-classroom`} name={`schedule-${i}-classroom`} label="Salón" placeholder="Salón" options={classrooms} value={s.classroom} onChange={(e) => update(i, { classroom: e.target.value })} />
           <button type="button" onClick={() => onChange(slots.filter((_, j) => j !== i))} aria-label={`Quitar franja ${i + 1}`} className="col-span-2 flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold text-danger-600 hover:bg-danger-100 sm:col-span-1 sm:w-11">
             <Trash2 className="size-4" aria-hidden />
           </button>

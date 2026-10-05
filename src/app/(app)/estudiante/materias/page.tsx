@@ -19,7 +19,7 @@ export default async function MyEnrollmentsPage() {
     if (!byPeriod.has(e.period.code)) byPeriod.set(e.period.code, { status: e.period.status, items: [] });
     byPeriod.get(e.period.code)!.items.push(e);
   }
-  const periods = [...byPeriod.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const periods = [...byPeriod.entries()].sort(([a], [b]) => b.localeCompare(a));
 
   return (
     <>
@@ -35,7 +35,7 @@ export default async function MyEnrollmentsPage() {
                 <h2 id={`p-${code}`} className="text-lg font-bold">
                   Periodo {code}
                 </h2>
-                <Badge tone={status === "abierto" ? "success" : "neutral"}>{status === "abierto" ? "Abierto" : "Cerrado"}</Badge>
+                <Badge tone={status === "abierto" ? "success" : status === "planificado" ? "warning" : "neutral"}>{status === "abierto" ? "Abierto" : status === "planificado" ? "Planificado" : "Cerrado"}</Badge>
               </div>
               <ul className="grid gap-3">
                 {items.map((e) => (

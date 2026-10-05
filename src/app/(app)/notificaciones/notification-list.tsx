@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Award, BookCheck, BookX, CheckCheck, Megaphone, Presentation, type LucideIcon } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
@@ -25,6 +26,7 @@ const when = (iso: string) =>
   new Date(iso).toLocaleString("es-CO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 export function NotificationList() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [result, setResult] = useState<Page | null>(null);
@@ -46,11 +48,15 @@ export function NotificationList() {
 
   async function markRead(id: string) {
     await api(`/notifications/${id}/read`, { method: "PATCH" }).catch(() => undefined);
+    if (unreadOnly && result?.data.length === 1 && page > 1) setPage(page - 1);
+    router.refresh();
     void load();
   }
 
   async function markAll() {
     await api("/notifications/read-all", { method: "PATCH" }).catch(() => undefined);
+    if (unreadOnly) setPage(1);
+    router.refresh();
     void load();
   }
 

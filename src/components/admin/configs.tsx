@@ -152,7 +152,7 @@ const classrooms: ResourceConfig = {
   filters: [
     { param: "building", label: "Edificio", text: true },
     { param: "type", label: "Tipo", options: ROOM_TYPES },
-    { param: "minCapacity", label: "Capacidad mínima", text: true },
+    { param: "minCapacity", label: "Capacidad mínima", text: true, type: "number" },
   ],
   columns: [
     { header: "Código", cell: (r) => <span className="font-semibold">{r.code}</span> },
@@ -166,8 +166,8 @@ const classrooms: ResourceConfig = {
   fields: [
     { name: "code", label: "Código", type: "text", required: true, placeholder: "B-203" },
     { name: "building", label: "Edificio", type: "text", required: true, placeholder: "B" },
-    { name: "floor", label: "Piso", type: "number", required: true, min: 1, max: 30 },
-    { name: "capacity", label: "Capacidad", type: "number", required: true, min: 5, max: 500 },
+    { name: "floor", label: "Piso", type: "number", required: true, min: 0, max: 30 },
+    { name: "capacity", label: "Capacidad", type: "number", required: true, min: 1, max: 500 },
     { name: "type", label: "Tipo", type: "select", options: ROOM_TYPES },
     { name: "hasProjector", label: "Tiene proyector", type: "checkbox" },
     { name: "active", label: "Salón activo", type: "checkbox", mode: "edit" },
