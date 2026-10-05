@@ -30,8 +30,8 @@ export function EvaluationsPanel({ groupId, readOnly }: { groupId: string; readO
   const load = useCallback(async () => {
     try {
       setItems((await api<Paginated<Evaluation>>(`/evaluations?group=${groupId}&limit=100`)).data);
-    } catch (e) {
-      setError(message(e, "No se pudieron cargar las evaluaciones"));
+    } catch {
+      setError("No se pudieron cargar las evaluaciones. Intenta de nuevo.");
     }
   }, [groupId]);
 
@@ -81,7 +81,7 @@ export function EvaluationsPanel({ groupId, readOnly }: { groupId: string; readO
     if (ok) setDeleting(null);
   }
 
-  if (!items) return error ? <Alert>{error}</Alert> : <p className="text-sm text-muted">Cargando…</p>;
+  if (!items) return error ? <div className="space-y-3"><Alert>{error}</Alert><Button variant="secondary" onClick={() => void load()}>Reintentar</Button></div> : <p className="text-sm text-muted">Cargando…</p>;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
